@@ -52,9 +52,8 @@ def solution0005(n: int):
     return result
     
 if __name__ == "__main__":
-    n = 100
-    if n <= 10:
-        print(solution0005_brute_force(n))
-    else:
-        print(solution0005_brute_force(10))
+    n = 20
+    # limit brute force solution to 10
+    if n <= 10: print(solution0005_brute_force(n))
+    else:       print(solution0005_brute_force(10))
     print(solution0005(n))
