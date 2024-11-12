@@ -1,5 +1,30 @@
 # projecteuler.net solutions
-def solution0010(n = 2000000):
+def solution0010(n = 2000000) -> int:
+    """ Return the sum of prime numbers below n using sieve of erotosthenes """
+    assert n > 1, 'must be larger than one'
+    
+    # initialize a list to mark all primes
+    is_prime = [True] * (n+1)
+    is_prime[0] = is_prime[1] = False # 0 and 1 are not primes
+    
+    # implement the sieve of erotosthenes, tracking the sum of primes up to sqrt(n)
+    prime_sum = 0
+    for start in range(2, int(n**0.5)+1):
+        if is_prime[start]:
+            # loop through all necessary cases if start**2 is less than n+1
+            for multiple in range(start**2, n+1, start):
+                is_prime[multiple] = False
+            # sum the primes at the same time
+            prime_sum += start
+    
+    # get the remaining numbers from sqrt(n) to n
+    for start in range(start+1, n+1):
+        if is_prime[start]:
+            prime_sum += start
+    
+    return prime_sum
+    
+def solution0010_slow(n = 2000000):
     """ return the sum of prime numbers below n """
     assert n > 0, 'must be larger than zero'
     if n == 1:
