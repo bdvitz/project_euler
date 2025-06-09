@@ -1,4 +1,7 @@
 # solutions 30 through 39
+from typing import Counter
+
+
 def solution0030(power = 5) -> int:
     """ Returns the sum of all the numbers that can be written as the sum of 'power' powers of their digits
     Examples:
@@ -248,7 +251,7 @@ def solution0036(n = 1000000):
 
 def solution0036_first_look(n = 1000000):
     """ first look at the problem, focused on counting the number of palindromes in each base """
-    # first questions first, are there more palindromes < n in base 10 or base 2?
+    # Are there more palindromes < n in base 10 or base 2?
     # 2 ^ 20 is approximately 1 million, slightly larger
     # 2 ^ 20 has 21 binary digits. Therefore numbers up to 1 million
     # can be expressed with 20 binary digits
@@ -342,6 +345,32 @@ def solution0037(n = 1000000) -> int:
     print(results)
     return sum(results)
 
+def solution0038(limit = 10000) -> str:
+    """ Pandigit multiples Solution
+    
+    Example:
+        >>> solution0038(100)
+        'The best pandigital: 918273645, occurs when the base integer is 9'
+    """
+    best_pandigital = -1
+    best_base = -1
+    digits = Counter('123456789')  # Counter of digits for comparison to the concatenated products
+    
+    # Loop through base integers, starting at the highest possible value from observations
+    for base_integer in range(limit, 0, -1):
+        s = ''
+        # loop through the integers for multiplying
+        for i in range(1,6):
+            s += str(base_integer * i)
+            if len(s) >= 9:
+                break
+        # check if the criteria was met and update the answer
+        if len(s) == 9 and Counter(s) == digits and best_pandigital < int(s):
+            best_pandigital = int(s)
+            best_base = base_integer
+    
+    return f"The best pandigital: {best_pandigital}, occurs when the base integer is {best_base}"
+    
 def solve_0030_thru_0039():
     # test()
     # print('solve 30: ', solution0030())
@@ -351,7 +380,8 @@ def solve_0030_thru_0039():
     # print('solve 34: ', solution0034())
     # print('solve 35: ', solution0035())
     # print('solve 36: ', solution0036())
-    print('solve 37: ', solution0037())
+    # print('solve 37: ', solution0037())
+    print('solve 38: ', solution0038())
 
 def test():
     """ run doctests - practice coding """
@@ -363,3 +393,4 @@ def test():
     
 if __name__ == "__main__":
     solve_0030_thru_0039()
+    # test()
