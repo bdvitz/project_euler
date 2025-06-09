@@ -342,7 +342,7 @@ def solution0037(n = 1000000) -> int:
         if truncatable(digits, True) and truncatable(digits, False):
             results.append(p)
     
-    print(results)
+    # print(results)
     return sum(results)
 
 def solution0038(limit = 10000) -> str:
@@ -370,18 +370,54 @@ def solution0038(limit = 10000) -> str:
             best_base = base_integer
     
     return f"The best pandigital: {best_pandigital}, occurs when the base integer is {best_base}"
+
+from math import gcd
+
+def solution0039(limit = 1000):
+    """ Integer Right Triangles 
+    >>> solution0039(121)
+    120
+    """
     
+    # modified pythagorean triplet generator
+    def generate_pythagorean_triplets(limit):
+        for m in range(2, int(limit**0.5) + 1):
+            for n in range(1, m):
+                if (m - n) % 2 == 1 and gcd(m, n) == 1:
+                    a = m * m - n * n
+                    b = 2 * m * n
+                    c = m * m + n * n
+
+                    # only yield valid perimeters below the limit
+                    perimeter = (a + b + c)
+                    for p in range(perimeter, limit + 1, perimeter):
+                        yield p
+    
+    # create a counter of the perimeters less than limit
+    count = [0] * (limit + 1)
+    for perimeter in generate_pythagorean_triplets(limit):
+        count[perimeter] += 1
+    
+    # loop through the counter and find the best result
+    best_index = 0
+    for index, perimeter_count in enumerate(count):
+        if count[best_index] < perimeter_count:
+            best_index = index
+    
+    return best_index
+
 def solve_0030_thru_0039():
-    # test()
-    # print('solve 30: ', solution0030())
-    # print('solve 31: ', solution0031())
-    # print('solve 32: ', solution0032())
-    # print('solve 33: ', solution0033())
-    # print('solve 34: ', solution0034())
-    # print('solve 35: ', solution0035())
-    # print('solve 36: ', solution0036())
-    # print('solve 37: ', solution0037())
+    test()
+    print('solve 30: ', solution0030())
+    print('solve 31: ', solution0031())
+    print('solve 32: ', solution0032())
+    print('solve 33: ', solution0033())
+    print('solve 34: ', solution0034())
+    print('solve 35: ', solution0035())
+    print('solve 36: ', solution0036())
+    print('solve 37: ', solution0037())
     print('solve 38: ', solution0038())
+    print('solve 39: ', solution0039())
 
 def test():
     """ run doctests - practice coding """
@@ -393,4 +429,3 @@ def test():
     
 if __name__ == "__main__":
     solve_0030_thru_0039()
-    # test()
