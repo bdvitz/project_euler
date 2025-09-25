@@ -58,12 +58,182 @@ def solution0040(power = 7) -> int:
         
     return product
 
+from math import isqrt
+from math import floor
+from math import log10
+from itertools import permutations
+
+def solution0041() -> int:
+    """ Return the largest pan-digital prime number """
+    # check if a number is prime quickly
+    # if the sum of 
+    
+    def is_prime(n):
+        """Return True if n is a prime number, else False."""
+        # # ignore less than 1 for efficiency
+        # if n <= 1:
+        #     return False
+        if n <= 3:
+            return True  # 2 and 3 are prime
+        if n % 2 == 0 or n % 3 == 0:
+            return False  # eliminate multiples of 2 and 3
+        
+        # check only numbers of from 6k ± 1 up to sqrt(n)
+        limit = int(isqrt(n)) + 1
+        for i in range(5, limit, 6):
+            if n % i == 0 or n % (i + 2) == 0:
+                return False
+        return True
+        
+    def is_n_digits(n, low, high):
+        """ Checks if all digits between 1 and n are used """
+        return seen[1] and high - low == floor(log10(n))
+    
+    seen = [False] * 10
+    answer = 1
+    
+    def check(number: int, low: int, high: int):
+        nonlocal answer
+        if answer < number and is_n_digits(number, low, high) and is_prime(number):
+            answer = number
+    
+    def backtrack(count: int, curr: int, low=10, high=0):
+        if count <= 3:
+            # check if the current number is prime and set to the maximum possible prime
+            check(curr, low, high)
+        
+        if count == 0:
+            return
+        
+        for i in range(1,10):
+            if not seen[i]:
+                seen[i] = True
+                backtrack(count-1, curr*10 + i, min(low, i), max(high, i))
+                seen[i] = False
+    
+    backtrack(9, 0)
+    return answer
+
+def solution0041_improved() -> int:
+    """ Return the largest pan-digital prime number """
+    def is_prime(n):
+        """Return True if n is a prime number, else False."""
+        # # ignore less than 1 for efficiency
+        # if n <= 1:
+        #     return False
+        if n <= 3:
+            return True  # 2 and 3 are prime
+        if n % 2 == 0 or n % 3 == 0:
+            return False  # eliminate multiples of 2 and 3
+        
+        # check only numbers of from 6k ± 1 up to sqrt(n)
+        limit = int(isqrt(n)) + 1
+        for i in range(5, limit, 6):
+            if n % i == 0 or n % (i + 2) == 0:
+                return False
+        return True
+
+    answer = 2143
+    for i in range(1, 10):
+        for perm in permutations(range(1,i+1)):
+            # check if the current permuatation is a solution
+            # convert to a number
+            num = 0
+            for j in range(i):
+                num *= 10
+                num += perm[j]
+            
+            # check if the number is better
+            if answer < num and is_prime(num):
+                answer = num
+    
+    return answer
+
+import csv
+from wrappers import wraps
+
+def solution0042() -> int:
+    """ Return the count of the words in the text file that have values equivalent
+    to a triangle number"""
+    # fast check for a triangle number is to multiply by two, check the sqrt,
+    # then determine the possible n^2 + n value for n as an integer.
+    # take the floor, then recalculate (n^2 + n )
+    def word_score(word: str):
+        score = 0
+        for char in word:
+            score += ord(char.lower()) - ord('a') + 1
+        return score
+    
+    def cache(f: callable):
+        """ typical caching decorator function for practice """
+        results = {}
+        @wraps(f)
+        def wrapper(*args, **keywords):
+            key = (args, tuple(sorted(keywords.items())))
+            if key not in results:
+                results[key] = f(*args, **keywords)
+            return results[key]
+        return wrapper
+    
+    @cache
+    def triangle_number(score: int) -> bool:
+        """ Return true if this is a triangle number """
+        n = isqrt(score * 2)
+        return score * 2 == (n**2) + n
+    
+    # read through the file using csv reader, delimited by the commas and quotechars
+    # count the triangle words one by one
+    count = 0
+    with open("problem0042.txt", newline="", encoding="utf-8") as f:
+        reader = csv.reader(f, delimiter=",", quotechar='"')
+        for row in reader:
+            for word in row:
+                count += triangle_number(word_score(word))
+    return count
+
+def solution0043() -> int:
+    """ sum of all 0 to 9 pandigital numbers with special property """
+    # iterate over the 10! numbers that are 0 to 9 pandigital
+    # check for each of these substring properties, starting with 
+    # 17 for d8d9d10
+    
+    # groupings of sub-string divisibility to check for
+    groupings = [
+        (7, 10, 17),
+        (6, 9, 13),
+        (5, 8, 11),
+        (4, 7, 7),
+        (3, 6, 5),
+        (2, 5, 3),
+        (1, 4, 2)
+    ]
+    total = 0
+    
+    # loop through all permuations of 0 to 9 pandigital numbers
+    for perm in permutations(range(10)):
+        # create the string
+        num = "".join(str(i) for i in perm)
+        # loop through the groupings of sub-strings to check
+        fail = False
+        for start, end, divisor in groupings:
+            # break early if a check fails
+            if not int(num[start:end]) % divisor == 0:
+                fail = True
+                break
+        # if the current pan-digital passes all of the tests,
+        # then include it in the sum
+        if not fail:
+            total += int(num)
+    
+    return total
+
 def solve_0040_thru_0049():
     test()
-    print('solve 40: ', solution0040())
+    # print('solve 40: ', solution0040())
     # print('solve 41: ', solution0041())
+    # print('solve 41 improved: ', solution0041_improved())
     # print('solve 42: ', solution0042())
-    # print('solve 43: ', solution0043())
+    print('solve 43: ', solution0043())
     # print('solve 44: ', solution0044())
     # print('solve 45: ', solution0045())
     # print('solve 46: ', solution0046())
