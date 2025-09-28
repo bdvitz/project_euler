@@ -152,6 +152,17 @@ def solution0041_improved() -> int:
 import csv
 from wrappers import wraps
 
+def cache(f: callable):
+    """ typical caching decorator function for practice """
+    results = {}
+    @wraps(f)
+    def wrapper(*args, **keywords):
+        key = (args, tuple(sorted(keywords.items())))
+        if key not in results:
+            results[key] = f(*args, **keywords)
+        return results[key]
+    return wrapper
+    
 def solution0042() -> int:
     """ Return the count of the words in the text file that have values equivalent
     to a triangle number"""
@@ -163,17 +174,6 @@ def solution0042() -> int:
         for char in word:
             score += ord(char.lower()) - ord('a') + 1
         return score
-    
-    def cache(f: callable):
-        """ typical caching decorator function for practice """
-        results = {}
-        @wraps(f)
-        def wrapper(*args, **keywords):
-            key = (args, tuple(sorted(keywords.items())))
-            if key not in results:
-                results[key] = f(*args, **keywords)
-            return results[key]
-        return wrapper
     
     @cache
     def triangle_number(score: int) -> bool:
@@ -227,14 +227,69 @@ def solution0043() -> int:
     
     return total
 
+from math import sqrt
+from heapq import heappush, heappop, heapify
+def solution0044() -> int:
+    """ Return the minimzed value of D for pentagonal numbers """
+    
+    @cache
+    def pent(n: int) -> float:
+        """ Return the nth pentagonal number """
+        return n * (3*n - 1) // 2
+
+    # After some algebraic transformations of the constraints, the solution is related to the
+    # case where P_a and P_b have a difference that is equal to 2 * P_x, and P_b is minimized
+    
+    # in this case, P_x + P_b is equal to P_y
+    
+    def ispentagonal(k: int) -> int:
+        """ returns if a number k is a pentagonal number """
+        return ((1 + 24*k)**0.5 + 1) % 6 == 0
+    
+    # solution method: loop with a generator of sorts...
+    # yield the next largest difference between pentagonal numbers
+    # if that difference is a pentagonal number, then check if the sum is also
+    # pentagonal. If the sum is a pentagonal, then return
+    
+    # one option is to maintain a heap that contains the position difference between
+    # x and y, and the next item in that spacing.
+    # the heap should only have the next spacing added to the list when the previous threashold
+    # is broken
+    # i.e. heap starts [(diff=4, P_b=P_1, spacing=1)]
+    # then it becomes [(7, P_2, 1), (11, P_1, 2)]
+    # basically, if the popped item has P_1, add an additional item to the heap for spacing n + 1
+    
+    pq = [(4,1,1)]
+    while True:
+        if len(pq) > 10000:
+            print('too big')
+            break
+        # print(pq)
+        # retrieve the next lowest difference from the heap
+        diff, i, spacing = heappop(pq)
+        
+        # break the loop if the properties hold        
+        if ispentagonal(diff) and ispentagonal(pent(i) + pent(i+spacing)):
+            break
+        
+        # do logic to update the heap with the next values
+        heappush(pq, (pent(i+1+spacing) - pent(i+1), i+1, spacing))
+        # on first index of a spacing, create the next index in the heap
+        if i == 1:
+            heappush(pq, (pent(i+1+spacing) - pent(1), 1, spacing+1))
+    print(len(pq))
+    return diff
+        
+        
+    
 def solve_0040_thru_0049():
     test()
     # print('solve 40: ', solution0040())
     # print('solve 41: ', solution0041())
     # print('solve 41 improved: ', solution0041_improved())
     # print('solve 42: ', solution0042())
-    print('solve 43: ', solution0043())
-    # print('solve 44: ', solution0044())
+    # print('solve 43: ', solution0043())
+    print('solve 44: ', solution0044())
     # print('solve 45: ', solution0045())
     # print('solve 46: ', solution0046())
     # print('solve 47: ', solution0047())
