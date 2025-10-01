@@ -230,10 +230,16 @@ def solution0043() -> int:
 from math import sqrt
 from heapq import heappush, heappop, heapify
 def solution0044() -> int:
-    """ Return the minimzed value of D for pentagonal numbers """
+    """ Return the minimzed value of D for pentagonal numbers
+    where   Py+Px = Pa
+    and     Py-Px = D
+    
+    Complete this by maintaining a heap with the smallest difference
+    between pentagonal numbers. Slow runtime, but proven global minimum answer
+    """
     
     @cache
-    def pent(n: int) -> float:
+    def pent(n: int) -> int:
         """ Return the nth pentagonal number """
         return n * (3*n - 1) // 2
 
@@ -242,7 +248,7 @@ def solution0044() -> int:
     
     # in this case, P_x + P_b is equal to P_y
     
-    def ispentagonal(k: int) -> int:
+    def ispentagonal(k: int) -> bool:
         """ returns if a number k is a pentagonal number """
         return ((1 + 24*k)**0.5 + 1) % 6 == 0
     
@@ -261,10 +267,6 @@ def solution0044() -> int:
     
     pq = [(4,1,1)]
     while True:
-        if len(pq) > 10000:
-            print('too big')
-            break
-        # print(pq)
         # retrieve the next lowest difference from the heap
         diff, i, spacing = heappop(pq)
         
@@ -277,11 +279,168 @@ def solution0044() -> int:
         # on first index of a spacing, create the next index in the heap
         if i == 1:
             heappush(pq, (pent(i+1+spacing) - pent(1), 1, spacing+1))
-    print(len(pq))
+
+    # print(len(pq))
     return diff
         
-        
+def solution0045() -> int:
+    """ Find the next triangle number that is also pentagonal and hexagonal """
+    def ispentagonal(k: int) -> bool:
+        """ returns if a number k is a pentagonal number """
+        return ((1 + 24*k)**0.5 + 1) % 6 == 0
+    def ishexagonal(k: int) -> bool:
+        return ((1 + 8*k)**0.5 + 1) % 4 == 0
+    def triangle(n: int) -> int:
+        """ Return the nth triangle number """
+        return (n**2 + n) // 2
+    curr = 286
+    while True:
+        t = triangle(curr)
+        if ispentagonal(t) and ishexagonal(t):
+            break
+        curr += 1
     
+    return t
+
+def solution0046() -> int:
+    """ Return the first composite odd number that cannot be
+    expressed as the sum of a prime and 2x a square """
+    def sieve_of_eratosthenes(n: int) -> list[int]:
+        """Return all prime numbers up to n (inclusive) using the Sieve of Eratosthenes."""
+        if n < 2:
+            return []
+
+        # Boolean array where index = number, True = prime candidate
+        sieve = [1] * (n + 1)
+        sieve[0] = sieve[1] = 0  # 0 and 1 are not prime
+
+        # Cross out non-primes
+        p = 2
+        while p * p <= n:
+            if sieve[p]:
+                for multiple in range(p * p, n + 1, p):
+                    sieve[multiple] = 0
+            p += 1
+
+        # Extract primes
+        return sieve
+    
+    limit = 10000
+    primes = sieve_of_eratosthenes(limit)
+    squares = [2*i**2 for i in range(1, floor(limit**0.5) + 1)]
+    # loop through the primes, and then nested loop through the 2x squares
+    for i in range(len(primes)):
+        if primes[i] < 1:
+            continue
+        
+        for y in squares:
+            s = i + y
+            # reduce the prime value for all found componsite numbers
+            if s <= limit and primes[s] < 1:
+                primes[s] -= 1
+    
+    # loop through the primes list and report the first composite number that did not occur
+    for i in range(11,len(primes),2):
+        if primes[i] == 0:
+            return i
+    return -1
+    
+
+def solution0047() -> int:
+    """ First four consecutive integers to have four distinct prime factors each
+    """
+    # create a function that counts distinct prime factors
+    @cache
+    def cf(n: int) -> int:
+        """ Returns the number of distinct prime factors """
+        count = 0
+        for divisor in range(2,floor(n**.5) + 1):
+            factor_found = False
+            while n % divisor == 0:
+                n //= divisor
+                factor_found = True
+            count += factor_found
+        return count + (n > 1)
+
+    # for some limit n, check if n and n + 2 have 4 prime factors
+    # if n and n + 2 have 4 prime factors, then check n-1, n+1, and n+3
+    
+    limit = 1000000
+    k = 7
+    c = 4
+    while k < limit:
+        if cf(k) == c and cf(k+1) == c and cf(k+2) == c and cf(k+3) == c:
+            return k
+        k += 1
+    return -1
+
+def solution0048() -> int:
+    """ Return the last 10 digits of the series n**n from n=1 to n=1000 """
+    # come up with an efficient way to calculate the last 10 digits of each
+    # element, then add them together
+    MOD = 10**10
+    
+    def pow(base: int, exp: int, mod: int) -> int:
+        """ Returns the result base**exp modulo mod """
+        base %= mod
+        result = 1
+        while exp > 0:
+            if exp & 1:
+                result = (result * base) % mod
+            base = (base * base) % mod
+            exp >>= 1
+        return result
+
+    total = 0
+    for i in range(1, 1001):
+        total = (total + pow(i, i, MOD)) % MOD
+    return total
+
+def solution0049() -> int:
+    """ Returns the 12 digits formed by combining 3 4-digit numbers that follow
+    the constraints in the problem statement """
+    def sieve_of_eratosthenes(n: int) -> list[int]:
+        """Return all prime numbers up to n (inclusive) using the Sieve of Eratosthenes."""
+        if n < 2:
+            return []
+
+        # Boolean array where index = number, True = prime candidate
+        sieve = [1] * (n + 1)
+        sieve[0] = sieve[1] = 0  # 0 and 1 are not prime
+
+        # Cross out non-primes
+        p = 2
+        while p * p <= n:
+            if sieve[p]:
+                for multiple in range(p * p, n + 1, p):
+                    sieve[multiple] = 0
+            p += 1
+
+        # Extract primes
+        return [p for p, isprime in enumerate(sieve) if isprime]
+    from collections import Counter
+    def are_perms(a: int, b: int, c: int) -> bool:
+        """ Returns true if the numbers are permutations of each other """
+        return Counter(str(a)) == Counter(str(b)) == Counter(str(c))
+    
+    # generate the primes between 1 and 10,000
+    primes = sieve_of_eratosthenes(10000)
+    
+    # Find the two 3 set of terms which are prime and share a difference
+    s = set(primes)
+    
+    # loop through the primes in reverse, checking for each differences
+    count = 0
+    for i in range(len(primes)-1, 0, -1):
+        for j in range(i-1, -1, -1):
+            if count == 2:
+                break
+            diff = primes[i] - primes[j]
+            if primes[j] - diff in s and are_perms(primes[j]-diff, primes[j], primes[i]):
+                return ''.join([str(primes[j]-diff), str(primes[j]), str(primes[i])])
+    return ""
+    
+
 def solve_0040_thru_0049():
     test()
     # print('solve 40: ', solution0040())
@@ -289,12 +448,12 @@ def solve_0040_thru_0049():
     # print('solve 41 improved: ', solution0041_improved())
     # print('solve 42: ', solution0042())
     # print('solve 43: ', solution0043())
-    print('solve 44: ', solution0044())
+    # print('solve 44: ', solution0044())
     # print('solve 45: ', solution0045())
     # print('solve 46: ', solution0046())
     # print('solve 47: ', solution0047())
     # print('solve 48: ', solution0048())
-    # print('solve 49: ', solution0049())
+    print('solve 49: ', solution0049())
 
 def test():
     """ run doctests - practice coding """
